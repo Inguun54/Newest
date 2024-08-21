@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Whack a Mole</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .mud {
+        position: absolute;
+        left: 50%;
+        bottom: 150px;
+        width: 600px;
+        height: 690px;
+        background-image: url("image copy 3.png");
+        z-index: 1;
+        border-radius: 20px;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .Title {
+        position: absolute;
+        top: 270px;
+        left: 50%;
+        color: black;
+        font-size: 50px;
+        text-align: center;
+        margin: 0;
+        transform: translateX(-50%);
+      }
+      .mario-img {
+        width: 100%;
+        height: 1450px;
+        background-image: url("image.png");
+        background-size: cover;
+        background-position: center;
+      }
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 0;
+        width: 600px;
+        height: 600px;
+        z-index: 2;
+      }
+      .tile {
+        width: 200px;
+        height: 200px;
+        background-image: url("image copy 2.png");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .tile img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="Title">Whack a Mole</h1>
+    <div class="mario-img"></div>
+    <div class="mud" id="mud">
+      <h2
+        id="score"
+        style="
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          color: black;
+          font-size: 40px;
+        "
+      >
+        Your score: 0
+      </h2>
+      <div id="board" class="board"></div>
+    </div>
+    <button
+      id="startButton"
+      style="
+        position: absolute;
+        top: 180px;
+        left: 48%;
+        color: black;
+        font-size: 40px;
+      "
+    >
+      Start
+    </button>
+
+    <script>
+      const startButton = document.getElementById("startButton");
+      startButton.onclick = function () {
+        startButton.style.display = "none";
+        setInterval(ToggleCharacter, 1000);
+      };
+
+      const board = document.getElementById("board");
+      const scoreElement = document.getElementById("score");
+      let score = 0;
+      let occupiedTiles = [];
+      let isMoleTurn = true;
+
+      for (let i = 0; i < 9; i++) {
+        let tile = document.createElement("div");
+        tile.classList.add("tile");
+        tile.id = i.toString();
+        board.appendChild(tile);
+      }
+
+      function RandomNumber() {
+        return Math.floor(Math.random() * 9).toString();
+      }
+
+      function UpdateScore(amount) {
+        score += amount;
+        scoreElement.textContent = `Your score: ${score}`;
+      }
+
+      function HideCharacter() {
+        occupiedTiles.forEach((tileId) => {
+          const box = document.getElementById(tileId);
+          box.innerHTML = "";
+        });
+        occupiedTiles = [];
+      }
+
+      function ShowCharacter(type) {
+        HideCharacter();
+
+        let number;
+        do {
+          number = RandomNumber();
+        } while (occupiedTiles.includes(number));
+
+        const box = document.getElementById(number);
+        const character = document.createElement("img");
+
+        if (type === "mole") {
+          character.src = "image copy.png";
+          character.alt = "Mole";
+          character.onclick = function () {
+            UpdateScore(10);
+            HideCharacter();
+          };
+        } else if (type === "chomper") {
+          character.src = "image copy 4.png";
+          character.alt = "Chomper";
+          character.onclick = function () {
+            EndGame();
+          };
+        }
+
+        character.style.width = "100%";
+        character.style.height = "100%";
+        character.style.cursor = "pointer";
+
+        box.appendChild(character);
+        occupiedTiles.push(number);
+      }
+
+      function EndGame() {
+        scoreElement.textContent = `Game Over!!!`;
+        setTimeout(() => {
+          window.location.reload();
+        }, 3200);
+      }
+
+      function ToggleCharacter() {
+        ShowCharacter(isMoleTurn ? "mole" : "chomper");
+        isMoleTurn = !isMoleTurn;
+      }
+      window.location.href = "Mario.html";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JavaScript Hangman Game</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #6a1b9a, #ab47bc);
+        font-family: "Arial", sans-serif;
+        color: #fff;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: #fff;
+        text-align: center;
+        margin: 0;
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 60px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+
+      h2 {
+        font-size: 40px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      h3 {
+        font-size: 24px;
+        margin: 10px 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      h4 {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+
+      .Mail,
+      .storage {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        background-color: #fff;
+        color: #333;
+        text-align: center;
+        line-height: 50px;
+        margin: 5px;
+        border: 2px solid #333;
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .Mail {
+        background-color: #d0f0c0;
+        color: #333;
+      }
+
+      .storage {
+        background-color: #ffffff;
+      }
+
+      .storage:hover {
+        background-color: #f0f0f0;
+        color: #000;
+      }
+
+      #alphabets,
+      #selected,
+      #wordDisplay {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 800px;
+        margin: 20px 0;
+      }
+
+      #selected {
+        margin-top: 20px;
+      }
+
+      .line {
+        color: #fff;
+        font-size: 32px;
+        padding: 0 15px;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 30px;
+        }
+
+        h2 {
+          font-size: 24px;
+        }
+
+        h3 {
+          font-size: 18px;
+        }
+
+        .line {
+          font-size: 24px;
+        }
+
+        .Mail,
+        .storage {
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HANGMAN</h1>
+    <h2>VANILLA JAVASCRIPT HANGMAN GAME</h2>
+    <h3>
+      Use the letters below to guess the word, or click hint to get a clue
+    </h3>
+    <div id="alphabets"></div>
+    <div id="selected"></div>
+    <div id="wordDisplay"></div>
+    <div id="letters"></div>
+    <h4 id="category">The Chosen Category is ???</h4>
+    <h4>You have <span id="lives">10</span> lives</h4>
+    <h4 id="clue">Clue -</h4>
+
+    <script>
+      const categories = {
+        marvel: [
+          "avengers",
+          "blackwidow",
+          "spiderman",
+          "ironman",
+          "thor",
+          "hulk",
+          "guardiansofthegalaxy",
+          "antman",
+        ],
+      };
+
+      let wordToGuess = "";
+      let Lives = 10;
+      let trick = [];
+      const selectedContainer = document.getElementById("selected");
+      const wordDisplay = document.getElementById("wordDisplay");
+      const livesDisplay = document.getElementById("lives");
+      const categoryDisplay = document.getElementById("category");
+      const lettersContainer = document.getElementById("letters");
+
+      function startGame(category) {
+        wordToGuess = getRandomWord(category);
+        Lives = 10;
+        trick = [];
+        selectedContainer.innerHTML = "";
+        lettersContainer.innerHTML = "";
+        wordDisplay.innerHTML = "";
+        livesDisplay.textContent = "Lives: " + Lives;
+        categoryDisplay.textContent = "Category: " + formatCategory(category);
+
+        const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
+        for (let i = 0; i < alphabet.length; i++) {
+          const letter = alphabet[i];
+          const letterButton = document.createElement("button");
+          letterButton.className = "storage";
+          letterButton.textContent = letter;
+          lettersContainer.appendChild(letterButton);
+          letterButton.addEventListener("click", function () {
+            handleGuess(letter);
+            letterButton.disabled = true;
+            letterButton.style.backgroundColor = "grey";
+          });
+        }
+
+        for (let i = 0; i < wordToGuess.length; i++) {
+          trick[i] = "_";
+        }
+        HardDisplay();
+      }
+
+      function getRandomWord(category) {
+        const words = categories[category];
+        const randomIndex = Math.floor(Math.random() * words.length);
+        return words[randomIndex];
+      }
+
+      function handleGuess(letter) {
+        let correctGuess = false;
+        for (let i = 0; i < wordToGuess.length; i++) {
+          if (wordToGuess[i] === letter) {
+            trick[i] = letter;
+            correctGuess = true;
+          }
+        }
+        if (!correctGuess) {
+          Lives -= 1;
+          livesDisplay.textContent = "Lives: " + Lives;
+        }
+        HardDisplay();
+        checkGameStatus();
+      }
+
+      function HardDisplay() {
+        wordDisplay.innerHTML = "";
+        for (let i = 0; i < trick.length; i++) {
+          const trickElement = document.createElement("div");
+          trickElement.innerHTML = trick[i];
+          trickElement.className = "line";
+          wordDisplay.appendChild(trickElement);
+        }
+      }
+
+      function checkGameStatus() {
+        let guessedWord = "";
+        for (let i = 0; i < trick.length; i++) {
+          guessedWord += trick[i];
+        }
+        if (guessedWord === wordToGuess) {
+          alert("Congratulations! You won!");
+          resetGame();
+        } else if (Lives === 0) {
+          alert("Game over! The word was '" + wordToGuess + "'.");
+          resetGame();
+        }
+      }
+
+      function resetGame() {
+        selectedContainer.innerHTML = "";
+        lettersContainer.innerHTML = "";
+        wordDisplay.innerHTML = "";
+        livesDisplay.textContent = "Lives: 10";
+        categoryDisplay.textContent = "Choose a category";
+        startGame("marvel");
+      }
+
+      function formatCategory(category) {
+        const categoriesMap = {
+          marvel: "Marvel Movies",
+          landmarks: "Famous Landmarks",
+        };
+        return categoriesMap[category] || "Unknown Category";
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        startGame("marvel");
+      });
+    </script>
+  </body>
+</html>
