@@ -3,185 +3,145 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Whack a Mole</title>
+    <title>JavaScript Hangman Game</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      .mud {
-        position: absolute;
-        left: 50%;
-        bottom: 150px;
-        width: 600px;
-        height: 690px;
-        background-image: url("image copy 3.png");
-        z-index: 1;
-        border-radius: 20px;
-        transform: translateX(-50%);
+      body {
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #6a1b9a, #ab47bc);
+        font-family: "Arial", sans-serif;
+        color: #fff;
       }
-      .Title {
-        position: absolute;
-        top: 270px;
-        left: 50%;
-        color: black;
-        font-size: 50px;
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        color: #fff;
         text-align: center;
         margin: 0;
-        transform: translateX(-50%);
+        padding: 10px;
       }
-      .mario-img {
+
+      h1 {
+        font-size: 60px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      }
+
+      h2 {
+        font-size: 40px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      h3 {
+        font-size: 24px;
+        margin: 10px 0;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+      }
+
+      h4 {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+
+      .Mail,
+      .storage {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        background-color: #fff;
+        color: #333;
+        text-align: center;
+        line-height: 50px;
+        margin: 5px;
+        border: 2px solid #333;
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .Mail {
+        background-color: #d0f0c0;
+        color: #333;
+      }
+
+      .storage {
+        background-color: #ffffff;
+      }
+
+      .storage:hover {
+        background-color: #f0f0f0;
+        color: #000;
+      }
+
+      #alphabets,
+      #selected,
+      #wordDisplay {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
         width: 100%;
-        height: 1450px;
-        background-image: url("image.png");
-        background-size: cover;
-        background-position: center;
+        max-width: 800px;
+        margin: 20px 0;
       }
-      .board {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(3, 1fr);
-        gap: 0;
-        width: 600px;
-        height: 600px;
-        z-index: 2;
+
+      #selected {
+        margin-top: 20px;
       }
-      .tile {
-        width: 200px;
-        height: 200px;
-        background-image: url("image copy 2.png");
-        background-size: cover;
-        background-position: center;
-        position: relative;
+
+      .line {
+        color: #fff;
+        font-size: 32px;
+        padding: 0 15px;
       }
-      .tile img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 30px;
+        }
+
+        h2 {
+          font-size: 24px;
+        }
+
+        h3 {
+          font-size: 18px;
+        }
+
+        .line {
+          font-size: 14px;
+        }
+
+        .Mail,
+        .storage {
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
+        }
       }
     </style>
   </head>
   <body>
-    <h1 class="Title">Whack a Mole</h1>
-    <div class="mario-img"></div>
-    <div class="mud" id="mud">
-      <h2
-        id="score"
-        style="
-          position: absolute;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          color: black;
-          font-size: 40px;
-        "
-      >
-        Your score: 0
-      </h2>
-      <div id="board" class="board"></div>
-    </div>
-    <button
-      id="startButton"
-      style="
-        position: absolute;
-        top: 180px;
-        left: 48%;
-        color: black;
-        font-size: 40px;
-      "
-    >
-      Start
-    </button>
+    <h1>HANGMAN</h1>
+    <h2>VANILLA JAVASCRIPT HANGMAN GAME</h2>
+    <h3>
+      Use the letters below to guess the word, or click hint to get a clue
+    </h3>
+    <div id="alphabets"></div>
+    <div id="selected"></div>
+    <div id="wordDisplay"></div>
+    <div id="letters"></div>
+    <h4 id="category">The Chosen Category is ???</h4>
+    <h4>You have <span id="lives">10</span> lives</h4>
+    <h4 id="clue">Clue -</h4>
 
-    <script>
-      const startButton = document.getElementById("startButton");
-      startButton.onclick = function () {
-        startButton.style.display = "none";
-        setInterval(ToggleCharacter, 1000);
-      };
-
-      const board = document.getElementById("board");
-      const scoreElement = document.getElementById("score");
-      let score = 0;
-      let occupiedTiles = [];
-      let isMoleTurn = true;
-
-      for (let i = 0; i < 9; i++) {
-        let tile = document.createElement("div");
-        tile.classList.add("tile");
-        tile.id = i.toString();
-        board.appendChild(tile);
-      }
-
-      function RandomNumber() {
-        return Math.floor(Math.random() * 9).toString();
-      }
-
-      function UpdateScore(amount) {
-        score += amount;
-        scoreElement.textContent = `Your score: ${score}`;
-      }
-
-      function HideCharacter() {
-        occupiedTiles.forEach((tileId) => {
-          const box = document.getElementById(tileId);
-          box.innerHTML = "";
-        });
-        occupiedTiles = [];
-      }
-
-      function ShowCharacter(type) {
-        HideCharacter();
-
-        let number;
-        do {
-          number = RandomNumber();
-        } while (occupiedTiles.includes(number));
-
-        const box = document.getElementById(number);
-        const character = document.createElement("img");
-
-        if (type === "mole") {
-          character.src = "image copy.png";
-          character.alt = "Mole";
-          character.onclick = function () {
-            UpdateScore(10);
-            HideCharacter();
-          };
-        } else if (type === "chomper") {
-          character.src = "image copy 4.png";
-          character.alt = "Chomper";
-          character.onclick = function () {
-            EndGame();
-          };
-        }
-
-        character.style.width = "100%";
-        character.style.height = "100%";
-        character.style.cursor = "pointer";
-
-        box.appendChild(character);
-        occupiedTiles.push(number);
-      }
-
-      function EndGame() {
-        scoreElement.textContent = `Game Over!!!`;
-        setTimeout(() => {
-          window.location.reload();
-        }, 3200);
-      }
-
-      function ToggleCharacter() {
-        ShowCharacter(isMoleTurn ? "mole" : "chomper");
-        isMoleTurn = !isMoleTurn;
-      }
-      window.location.href = "Mario.html";
-    </script>
+    <script src="javascript.js"></script>
   </body>
 </html>

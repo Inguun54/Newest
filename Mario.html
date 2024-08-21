@@ -3,264 +3,122 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JavaScript Hangman Game</title>
+    <title>Whack a Mole</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
       body {
+        font-family: Arial, sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        margin: 0;
-        background: linear-gradient(135deg, #6a1b9a, #ab47bc);
-        font-family: "Arial", sans-serif;
-        color: #fff;
-      }
-
-      h1,
-      h2,
-      h3,
-      h4 {
-        color: #fff;
-        text-align: center;
-        margin: 0;
-        padding: 10px;
-      }
-
-      h1 {
-        font-size: 60px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-      }
-
-      h2 {
-        font-size: 40px;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-      }
-
-      h3 {
-        font-size: 24px;
-        margin: 10px 0;
-        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-      }
-
-      h4 {
-        font-size: 20px;
-        margin-top: 20px;
-      }
-
-      .Mail,
-      .storage {
-        display: inline-block;
-        width: 50px;
-        height: 50px;
-        background-color: #fff;
-        color: #333;
-        text-align: center;
-        line-height: 50px;
-        margin: 5px;
-        border: 2px solid #333;
-        border-radius: 8px;
-        font-size: 20px;
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
-      }
-
-      .Mail {
-        background-color: #d0f0c0;
-        color: #333;
-      }
-
-      .storage {
-        background-color: #ffffff;
-      }
-
-      .storage:hover {
         background-color: #f0f0f0;
-        color: #000;
       }
-
-      #alphabets,
-      #selected,
-      #wordDisplay {
+      .mud {
+        position: relative;
+        width: 80vw;
+        max-width: 600px;
+        height: 110px;
+        padding-bottom: 600px;
+        background-image: url("image copy 3.png");
+        background-size: cover;
+        background-position: center;
+        border-radius: 20px;
         display: flex;
-        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        gap: 10px;
+      }
+      .Title {
+        position: absolute;
+        top: 2%;
+        left: 50%;
+        color: black;
+        font-size: 20px;
+        text-align: center;
+        transform: translateX(-50%);
+      }
+      .mario-img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
-        max-width: 800px;
-        margin: 20px 0;
+        height: 100vh;
+        background-image: url("image.png");
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
       }
-
-      #selected {
-        margin-top: 20px;
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 0;
+        width: 90%;
+        height: 90%;
       }
-
-      .line {
-        color: #fff;
-        font-size: 32px;
-        padding: 0 15px;
+      .tile {
+        background-image: url("image copy 2.png");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        aspect-ratio: 1 / 1;
       }
-
+      .tile img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #score {
+        position: absolute;
+        top: 3%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: black;
+        font-size: 10px;
+      }
+      #startButton {
+        position: absolute;
+        top: 18%;
+        left: 50%;
+        transform: translateX(-50%);
+        color: black;
+        font-size: 20px;
+      }
       @media (max-width: 600px) {
-        h1 {
-          font-size: 30px;
+        .Title {
+          font-size: 8vw;
         }
-
-        h2 {
-          font-size: 24px;
+        #score,
+        #startButton {
+          font-size: 10px;
         }
-
-        h3 {
-          font-size: 18px;
+      }
+      @media (min-width: 1200px) {
+        .Title {
+          font-size: 50px;
         }
-
-        .line {
-          font-size: 24px;
-        }
-
-        .Mail,
-        .storage {
-          width: 40px;
-          height: 40px;
-          font-size: 18px;
+        #score,
+        #startButton {
+          font-size: 40px;
         }
       }
     </style>
   </head>
   <body>
-    <h1>HANGMAN</h1>
-    <h2>VANILLA JAVASCRIPT HANGMAN GAME</h2>
-    <h3>
-      Use the letters below to guess the word, or click hint to get a clue
-    </h3>
-    <div id="alphabets"></div>
-    <div id="selected"></div>
-    <div id="wordDisplay"></div>
-    <div id="letters"></div>
-    <h4 id="category">The Chosen Category is ???</h4>
-    <h4>You have <span id="lives">10</span> lives</h4>
-    <h4 id="clue">Clue -</h4>
-
-    <script>
-      const categories = {
-        marvel: [
-          "avengers",
-          "blackwidow",
-          "spiderman",
-          "ironman",
-          "thor",
-          "hulk",
-          "guardiansofthegalaxy",
-          "antman",
-        ],
-      };
-
-      let wordToGuess = "";
-      let Lives = 10;
-      let trick = [];
-      const selectedContainer = document.getElementById("selected");
-      const wordDisplay = document.getElementById("wordDisplay");
-      const livesDisplay = document.getElementById("lives");
-      const categoryDisplay = document.getElementById("category");
-      const lettersContainer = document.getElementById("letters");
-
-      function startGame(category) {
-        wordToGuess = getRandomWord(category);
-        Lives = 10;
-        trick = [];
-        selectedContainer.innerHTML = "";
-        lettersContainer.innerHTML = "";
-        wordDisplay.innerHTML = "";
-        livesDisplay.textContent = "Lives: " + Lives;
-        categoryDisplay.textContent = "Category: " + formatCategory(category);
-
-        const alphabet = "abcdefghijklmnopqrstuvwxyz".split("");
-        for (let i = 0; i < alphabet.length; i++) {
-          const letter = alphabet[i];
-          const letterButton = document.createElement("button");
-          letterButton.className = "storage";
-          letterButton.textContent = letter;
-          lettersContainer.appendChild(letterButton);
-          letterButton.addEventListener("click", function () {
-            handleGuess(letter);
-            letterButton.disabled = true;
-            letterButton.style.backgroundColor = "grey";
-          });
-        }
-
-        for (let i = 0; i < wordToGuess.length; i++) {
-          trick[i] = "_";
-        }
-        HardDisplay();
-      }
-
-      function getRandomWord(category) {
-        const words = categories[category];
-        const randomIndex = Math.floor(Math.random() * words.length);
-        return words[randomIndex];
-      }
-
-      function handleGuess(letter) {
-        let correctGuess = false;
-        for (let i = 0; i < wordToGuess.length; i++) {
-          if (wordToGuess[i] === letter) {
-            trick[i] = letter;
-            correctGuess = true;
-          }
-        }
-        if (!correctGuess) {
-          Lives -= 1;
-          livesDisplay.textContent = "Lives: " + Lives;
-        }
-        HardDisplay();
-        checkGameStatus();
-      }
-
-      function HardDisplay() {
-        wordDisplay.innerHTML = "";
-        for (let i = 0; i < trick.length; i++) {
-          const trickElement = document.createElement("div");
-          trickElement.innerHTML = trick[i];
-          trickElement.className = "line";
-          wordDisplay.appendChild(trickElement);
-        }
-      }
-
-      function checkGameStatus() {
-        let guessedWord = "";
-        for (let i = 0; i < trick.length; i++) {
-          guessedWord += trick[i];
-        }
-        if (guessedWord === wordToGuess) {
-          alert("Congratulations! You won!");
-          resetGame();
-        } else if (Lives === 0) {
-          alert("Game over! The word was '" + wordToGuess + "'.");
-          resetGame();
-        }
-      }
-
-      function resetGame() {
-        selectedContainer.innerHTML = "";
-        lettersContainer.innerHTML = "";
-        wordDisplay.innerHTML = "";
-        livesDisplay.textContent = "Lives: 10";
-        categoryDisplay.textContent = "Choose a category";
-        startGame("marvel");
-      }
-
-      function formatCategory(category) {
-        const categoriesMap = {
-          marvel: "Marvel Movies",
-          landmarks: "Famous Landmarks",
-        };
-        return categoriesMap[category] || "Unknown Category";
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        startGame("marvel");
-      });
-    </script>
+    <h1 class="Title">Whack a Mole</h1>
+    <div class="mario-img"></div>
+    <div class="mud" id="mud">
+      <h2 id="score">Your score: 0</h2>
+      <div id="board" class="board"></div>
+    </div>
+    <button id="startButton">Start</button>
+    <script src="javascripto.js"></script>
   </body>
 </html>
